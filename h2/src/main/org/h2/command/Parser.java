@@ -415,6 +415,8 @@ import org.h2.value.ValueTimestamp;
 import org.h2.value.ValueTimestampTimeZone;
 import org.h2.value.ValueUuid;
 import org.h2.value.ValueVarchar;
+import org.h2.expression.function.CryptFunction;
+
 
 /**
  * The parser is used to convert a SQL statement string to an command object.
@@ -4125,6 +4127,26 @@ public final class Parser extends ParserBase {
             return new StringFunction1(readSingleArgument(), StringFunction1.UPPER);
         case "LOWER":
             return new StringFunction1(readSingleArgument(), StringFunction1.LOWER);
+        case "TO_PASSWORD": {
+            Expression arg1 = readExpression();
+            Expression arg2 = readIf(COMMA) ? readExpression() : null;
+            read(CLOSE_PAREN);
+            if (arg2 != null) {
+                return new org.h2.expression.function.PasswordFunctions.ToPassword(arg1, arg2);
+            } else {
+                return new org.h2.expression.function.PasswordFunctions.ToPassword(arg1);
+            }
+        }
+
+        case "PASSWORD_VERIFY": {
+            Expression arg1 = readExpression();
+            Expression arg2 = readNextArgument();
+            read(CLOSE_PAREN);
+            return new org.h2.expression.function.PasswordVerify(arg1, arg2);
+        }
+
+        case "PASSWORD_ALGO":
+            return new org.h2.expression.function.PasswordAlgo(readSingleArgument());
         case "ASCII":
             return new StringFunction1(readSingleArgument(), StringFunction1.ASCII);
         case "CHAR":
@@ -4252,6 +4274,10 @@ public final class Parser extends ParserBase {
             return new CryptFunction(readExpression(), readNextArgument(), readLastArgument(), CryptFunction.ENCRYPT);
         case "DECRYPT":
             return new CryptFunction(readExpression(), readNextArgument(), readLastArgument(), CryptFunction.DECRYPT);
+        case "PASSWORD":
+            System.out.println("DEBUG: PASSWORD() recognized by parser!");
+            Expression arg = readExpression();
+            return new CryptFunction(arg, CryptFunction.PASSWORD);
         case "COALESCE":
             return readCoalesceFunction(CoalesceFunction.COALESCE);
         case "GREATEST":
@@ -5722,6 +5748,9 @@ public final class Parser extends ParserBase {
         if (typeInfo == null) {
             String domainName = readIdentifierWithSchema();
             return getColumnWithDomain(columnName, getSchema().getDomain(domainName));
+        }
+        if (typeInfo != null && typeInfo.getValueType() == Value.PASSWORD) {
+            System.out.println("DEBUG: Creating PASSWORD column: " + columnName + ", typeInfo: " + typeInfo + ", valueType: " + typeInfo.getValueType());
         }
         return new Column(columnName, typeInfo);
     }

@@ -18,6 +18,7 @@ import org.h2.value.TypeInfo;
 import org.h2.value.Value;
 import org.h2.value.ValueVarbinary;
 
+
 /**
  * An ENCRYPT or DECRYPT function.
  */
@@ -28,38 +29,55 @@ public final class CryptFunction extends FunctionN {
      */
     public static final int ENCRYPT = 0;
 
+
     /**
      * DECRYPT() (non-standard).
      */
     public static final int DECRYPT = ENCRYPT + 1;
+    public static final int PASSWORD = DECRYPT + 1;
 
     private static final String[] NAMES = { //
-            "ENCRYPT", "DECRYPT" //
+            "ENCRYPT", "DECRYPT" , "PASSWORD" //
     };
 
     private final int function;
 
     public CryptFunction(Expression arg1, Expression arg2, Expression arg3, int function) {
-        super(new Expression[] { arg1, arg2, arg3 });
+        super(new Expression[] {
+                arg1 != null ? arg1 : TypedValueExpression.NULL,
+                arg2 != null ? arg2 : TypedValueExpression.NULL,
+                arg3 != null ? arg3 : TypedValueExpression.NULL
+        });
         this.function = function;
     }
 
+    public CryptFunction(Expression arg1, int function) {
+        super(new Expression[] { arg1 });
+        this.function = function;
+    }
+
+
+
     @Override
     public Value getValue(SessionLocal session, Value v1, Value v2, Value v3) {
-        BlockCipher cipher = CipherFactory.getBlockCipher(v1.getString());
-        cipher.setKey(getPaddedArrayCopy(v2.getBytesNoCopy(), cipher.getKeyLength()));
-        byte[] newData = getPaddedArrayCopy(v3.getBytesNoCopy(), BlockCipher.ALIGN);
         switch (function) {
-        case ENCRYPT:
-            cipher.encrypt(newData, 0, newData.length);
-            break;
-        case DECRYPT:
-            cipher.decrypt(newData, 0, newData.length);
-            break;
-        default:
-            throw DbException.getInternalError("function=" + function);
+            case ENCRYPT: {
+                BlockCipher cipher = CipherFactory.getBlockCipher(v1.getString());
+                cipher.setKey(getPaddedArrayCopy(v2.getBytesNoCopy(), cipher.getKeyLength()));
+                byte[] newData = getPaddedArrayCopy(v3.getBytesNoCopy(), BlockCipher.ALIGN);
+                cipher.encrypt(newData, 0, newData.length);
+                return ValueVarbinary.getNoCopy(newData);
+            }
+            case DECRYPT: {
+                BlockCipher cipher = CipherFactory.getBlockCipher(v1.getString());
+                cipher.setKey(getPaddedArrayCopy(v2.getBytesNoCopy(), cipher.getKeyLength()));
+                byte[] newData = getPaddedArrayCopy(v3.getBytesNoCopy(), BlockCipher.ALIGN);
+                cipher.decrypt(newData, 0, newData.length);
+                return ValueVarbinary.getNoCopy(newData);
+            }
+            default:
+                throw DbException.getInternalError("function=" + function);
         }
-        return ValueVarbinary.getNoCopy(newData);
     }
 
     private static byte[] getPaddedArrayCopy(byte[] data, int blockSize) {
@@ -68,6 +86,15 @@ public final class CryptFunction extends FunctionN {
 
     @Override
     public Expression optimize(SessionLocal session) {
+        // Handle PASSWORD (only 1 argument)
+        if (function == PASSWORD) {
+            // Optimize the first argument only
+            args[0] = args[0].optimize(session);
+            type = TypeInfo.getTypeInfo(Value.VARBINARY, -1, 0, null);
+            return this;
+        }
+
+        // Original behavior for ENCRYPT / DECRYPT
         boolean allConst = optimizeArguments(session, true);
         TypeInfo t = args[2].getType();
         type = DataType.isBinaryStringType(t.getValueType())
@@ -78,6 +105,7 @@ public final class CryptFunction extends FunctionN {
         }
         return this;
     }
+
 
     @Override
     public String getName() {

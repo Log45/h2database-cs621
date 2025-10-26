@@ -42,6 +42,7 @@ import org.h2.value.lob.LobData;
 import org.h2.value.lob.LobDataDatabase;
 import org.h2.value.lob.LobDataInMemory;
 
+
 /**
  * This is the base class for all value classes.
  * It provides conversion and comparison methods.
@@ -270,7 +271,10 @@ public abstract class Value extends VersionedValue<Value> implements HasSQL, Typ
     /**
      * The number of value types.
      */
-    public static final int TYPE_COUNT = ROW + 1;
+    public static final int PASSWORD = ROW+1;
+
+
+    public static final int TYPE_COUNT = PASSWORD + 1;
 
     /**
      * Group for untyped NULL data type.
@@ -369,7 +373,7 @@ public abstract class Value extends VersionedValue<Value> implements HasSQL, Typ
             "INTERVAL DAY TO HOUR", "INTERVAL DAY TO MINUTE", "INTERVAL DAY TO SECOND", //
             "INTERVAL HOUR TO MINUTE", "INTERVAL HOUR TO SECOND", "INTERVAL MINUTE TO SECOND", //
             "JAVA_OBJECT", "ENUM", "GEOMETRY", "JSON", "UUID", //
-            "ARRAY", "ROW", //
+            "ARRAY", "ROW", "PASSWORD", //
     };
 
     /**
@@ -1417,6 +1421,7 @@ public abstract class Value extends VersionedValue<Value> implements HasSQL, Typ
                 v = handler.getLobStorage().createBlob(getInputStream(), -1);
                 break;
             }
+
             //$FALL-THROUGH$
         default:
             try {

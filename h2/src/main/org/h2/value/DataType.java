@@ -128,6 +128,21 @@ public class DataType {
         add(Value.CLOB, Types.CLOB, createLob(true),
                 "CHARACTER LARGE OBJECT", "CLOB", "CHAR LARGE OBJECT",
                 "NCLOB", "NCHAR LARGE OBJECT", "NATIONAL CHARACTER LARGE OBJECT");
+        DataType passwordDataType = new DataType();
+        passwordDataType.prefix = "'";
+        passwordDataType.suffix = "'";
+        passwordDataType.params = "LENGTH";
+        passwordDataType.caseSensitive = false;
+        passwordDataType.supportsPrecision = false;
+        passwordDataType.minPrecision = 1;
+        passwordDataType.maxPrecision = 255; // stored hash size
+        passwordDataType.defaultPrecision = 255;
+
+        add(Value.PASSWORD, Types.VARCHAR, passwordDataType, "PASSWORD");
+
+
+
+
         add(Value.VARCHAR_IGNORECASE, Types.VARCHAR, createString(false, false), "VARCHAR_IGNORECASE");
         add(Value.BINARY, Types.BINARY, createBinary(true), "BINARY");
         add(Value.VARBINARY, Types.VARBINARY, createBinary(false),

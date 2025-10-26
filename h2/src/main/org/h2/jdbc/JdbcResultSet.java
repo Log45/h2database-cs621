@@ -40,21 +40,7 @@ import org.h2.result.UpdatableRow;
 import org.h2.util.IOUtils;
 import org.h2.util.LegacyDateTimeUtils;
 import org.h2.util.StringUtils;
-import org.h2.value.CompareMode;
-import org.h2.value.DataType;
-import org.h2.value.Value;
-import org.h2.value.ValueBigint;
-import org.h2.value.ValueBoolean;
-import org.h2.value.ValueDouble;
-import org.h2.value.ValueInteger;
-import org.h2.value.ValueNull;
-import org.h2.value.ValueNumeric;
-import org.h2.value.ValueReal;
-import org.h2.value.ValueSmallint;
-import org.h2.value.ValueTinyint;
-import org.h2.value.ValueToObjectConverter;
-import org.h2.value.ValueVarbinary;
-import org.h2.value.ValueVarchar;
+import org.h2.value.*;
 
 /**
  * Represents a result set.
@@ -280,11 +266,13 @@ public final class JdbcResultSet extends TraceObject implements ResultSet {
     public String getString(int columnIndex) throws SQLException {
         try {
             debugCodeCall("getString", columnIndex);
-            return get(checkColumnIndex(columnIndex)).getString();
+            Value value = get(checkColumnIndex(columnIndex));
+            return value.getString();  // ✅ no MEDIA check
         } catch (Exception e) {
             throw logAndConvert(e);
         }
     }
+
 
     /**
      * Returns the value of the specified column as a String.
@@ -298,11 +286,13 @@ public final class JdbcResultSet extends TraceObject implements ResultSet {
     public String getString(String columnLabel) throws SQLException {
         try {
             debugCodeCall("getString", columnLabel);
-            return get(getColumnIndex(columnLabel)).getString();
+            Value value = get(getColumnIndex(columnLabel));
+            return value.getString();  // ✅ simplified
         } catch (Exception e) {
             throw logAndConvert(e);
         }
     }
+
 
     /**
      * Returns the value of the specified column as an int.
@@ -1205,11 +1195,13 @@ public final class JdbcResultSet extends TraceObject implements ResultSet {
     public byte[] getBytes(int columnIndex) throws SQLException {
         try {
             debugCodeCall("getBytes", columnIndex);
-            return get(checkColumnIndex(columnIndex)).getBytes();
+            Value value = get(checkColumnIndex(columnIndex));
+            return value.getBytes();  // ✅ simplified
         } catch (Exception e) {
             throw logAndConvert(e);
         }
     }
+
 
     /**
      * Returns the value of the specified column as a byte array.
@@ -1223,11 +1215,13 @@ public final class JdbcResultSet extends TraceObject implements ResultSet {
     public byte[] getBytes(String columnLabel) throws SQLException {
         try {
             debugCodeCall("getBytes", columnLabel);
-            return get(getColumnIndex(columnLabel)).getBytes();
+            Value value = get(getColumnIndex(columnLabel));
+            return value.getBytes();  // ✅ simplified
         } catch (Exception e) {
             throw logAndConvert(e);
         }
     }
+
 
     /**
      * Returns the value of the specified column as an input stream.

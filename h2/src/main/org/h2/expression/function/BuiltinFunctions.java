@@ -10,6 +10,7 @@ import java.util.HashSet;
 import org.h2.engine.Database;
 import org.h2.mode.ModeFunction;
 
+
 /**
  * Maintains the list of built-in functions.
  */
@@ -66,7 +67,7 @@ public final class BuiltinFunctions {
                 // JsonConstructorFunction
                 "JSON_OBJECT", "JSON_ARRAY",
                 // CryptFunction
-                "ENCRYPT", "DECRYPT",
+                "ENCRYPT", "DECRYPT", "PASSWORD",
                 // CoalesceFunction
                 "COALESCE", "GREATEST", "LEAST",
                 // NullIfFunction

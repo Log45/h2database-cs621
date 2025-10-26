@@ -16,6 +16,8 @@ import org.h2.api.ErrorCode;
 import org.h2.api.IntervalQualifier;
 import org.h2.engine.Constants;
 import org.h2.message.DbException;
+import java.sql.Types;
+
 
 /**
  * Data type with parameters.
@@ -41,6 +43,7 @@ public class TypeInfo extends ExtTypeInfo implements Typed {
      * CHARACTER VARYING type with maximum parameters.
      */
     public static final TypeInfo TYPE_VARCHAR;
+
 
     /**
      * VARCHAR_IGNORECASE type with maximum parameters.
@@ -272,6 +275,8 @@ public class TypeInfo extends ExtTypeInfo implements Typed {
         infos[Value.ARRAY] = TYPE_ARRAY_UNKNOWN = new TypeInfo(Value.ARRAY);
         infos[Value.ROW] = TYPE_ROW_EMPTY = new TypeInfo(Value.ROW, -1L, -1, //
                 new ExtTypeInfoRow(new LinkedHashMap<>()));
+        // PASSWORD
+        infos[Value.PASSWORD] = new TypeInfo(Value.PASSWORD, 255L, -1, null);
         TYPE_INFOS_BY_VALUE_TYPE = infos;
     }
 

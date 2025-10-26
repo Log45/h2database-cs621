@@ -420,6 +420,11 @@ public final class ValueToObjectConverter2 extends TraceObject {
             }
             break;
         }
+        case Value.PASSWORD: {
+            String s = rs.getString(columnIndex);
+            v = (s == null) ? ValueNull.INSTANCE : ValuePassword.fromHash(s);
+            break;
+        }
         default:
             throw DbException.getInternalError("data type " + type);
         }

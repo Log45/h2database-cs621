@@ -68,6 +68,7 @@ import org.h2.value.ValueUuid;
 import org.h2.value.ValueVarbinary;
 import org.h2.value.ValueVarchar;
 import org.h2.value.ValueVarcharIgnoreCase;
+import org.h2.value.ValuePassword;
 import org.h2.value.lob.LobData;
 import org.h2.value.lob.LobDataDatabase;
 import org.h2.value.lob.LobDataInMemory;
@@ -417,6 +418,9 @@ public final class ValueDataType extends BasicDataType<Value> implements Statefu
         case Value.VARCHAR_IGNORECASE:
             writeString(buff.put(VARCHAR_IGNORECASE), v.getString());
             break;
+        case Value.PASSWORD:
+            writeString(buff.put(VARCHAR), v.getString());
+            break;
         case Value.CHAR:
             writeString(buff.put(CHAR), v.getString());
             break;
@@ -665,8 +669,13 @@ public final class ValueDataType extends BasicDataType<Value> implements Statefu
             return ValueJavaObject.getNoCopy(readVarBytes(buff));
         case UUID:
             return ValueUuid.get(buff.getLong(), buff.getLong());
-        case VARCHAR:
-            return ValueVarchar.get(readString(buff));
+        case VARCHAR: {
+            String s = readString(buff);
+            if (columnType != null && columnType.getValueType() == Value.PASSWORD) {
+                return ValuePassword.fromHash(s);
+            }
+            return ValueVarchar.get(s);
+        }
         case VARCHAR_IGNORECASE:
             return ValueVarcharIgnoreCase.get(readString(buff));
         case CHAR:
